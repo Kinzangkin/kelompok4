@@ -15,6 +15,7 @@ from components.scan_panel import ScanPanel
 from components.rgb_to_gray import RGBToGrayPanel
 from components.gray_to_biner import GrayToBinerPanel
 from components.histogram_panel import HistogramPanel
+from components.edge_detection_panel import EdgeDetectionPanel
 from components.utils import get_color_name, format_file_size, open_file_location
 
 
@@ -38,6 +39,7 @@ class AplikasiPengolahanCitra:
         self.rgb_gray_component = RGBToGrayPanel(self)
         self.gray_biner_component = GrayToBinerPanel(self)
         self.histogram_component = HistogramPanel(self)
+        self.edge_detection_component = EdgeDetectionPanel(self)
         
         # Setup UI
         self.setup_menu()
@@ -77,6 +79,7 @@ class AplikasiPengolahanCitra:
         analisis_menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Analisis Citra", menu=analisis_menu)
         analisis_menu.add_command(label="Histogram", command=self.show_histogram_selection)
+        analisis_menu.add_command(label="Deteksi Tepi", command=self.show_edge_detection_selection)
     
     def setup_status_bar(self):
         """Setup status bar"""
@@ -125,6 +128,9 @@ class AplikasiPengolahanCitra:
 
     def show_histogram_selection(self):
         self.histogram_component.show_selection()
+
+    def show_edge_detection_selection(self):
+        self.edge_detection_component.show_selection()
 
 
 def main():

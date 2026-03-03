@@ -199,20 +199,20 @@ class HistogramPanel:
 
         # === BOTTOM SECTION: Buttons ===
         btn_frame = tk.Frame(self.hist_window, bg="#2c3e50")
-        btn_frame.pack(fill=tk.X, padx=15, pady=(5, 12))
+        btn_frame.pack(fill=tk.X, padx=10, pady=(5, 12))
 
-        btn_style = {"font": ("Helvetica", 10, "bold"), "width": 14, "height": 2, "cursor": "hand2"}
+        btn_style = {"font": ("Helvetica", 15, "bold"), "width": 14, "height": 2, "cursor": "hand2"}
 
         self.capture_btn = tk.Button(btn_frame, text="📷 Capture",
                                      command=self.capture_image,
                                      bg="#2ecc71", fg="white", **btn_style)
-        self.capture_btn.pack(side=tk.LEFT, padx=4, expand=True)
+        self.capture_btn.pack(side=tk.LEFT, padx=20, expand=True)
 
         self.histogram_btn = tk.Button(btn_frame, text="📊 Histogram",
                                        command=self.show_histogram,
                                        bg="#9b59b6", fg="white",
                                        state=tk.DISABLED, **btn_style)
-        self.histogram_btn.pack(side=tk.LEFT, padx=4, expand=True)
+        self.histogram_btn.pack(side=tk.LEFT, padx=20, expand=True)
 
         self.save_btn = tk.Button(btn_frame, text="💾 Simpan",
                                   command=self.save_to_database,
