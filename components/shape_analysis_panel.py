@@ -105,6 +105,12 @@ class ShapeAnalysisPanel:
 
         btn_style = {"font": ("Helvetica", 11, "bold"), "width": 14, "height": 1, "cursor": "hand2", "relief": tk.FLAT, "pady": 8}
 
+        self.save_btn = tk.Button(btn_inner, text="💾 Simpan",
+                                  command=self.save_image,
+                                  bg="#10b981", fg="white", activebackground="#059669", activeforeground="white",
+                                  disabledforeground="white", state=tk.DISABLED, **btn_style)
+        self.save_btn.pack(side=tk.LEFT, padx=15)
+
         self.export_btn = tk.Button(btn_inner, text="📄 Export Excel",
                                   command=self.export_excel,
                                   bg="#0ea5e9", fg="white", activebackground="#0284c7", activeforeground="white",
@@ -251,6 +257,7 @@ class ShapeAnalysisPanel:
             self.capture_btn.config(text="📸 Capture", bg="#22c55e", activebackground="#16a34a")
             self.timer_btn.config(state=tk.NORMAL)
             self.export_btn.config(state=tk.DISABLED)
+            self.save_btn.config(state=tk.DISABLED)
             self._clear_stats()
             self._update_camera_loop()
             self.app.update_status("Kamera live view")
@@ -277,6 +284,8 @@ class ShapeAnalysisPanel:
         self.btn_camera.config(state=tk.DISABLED)
         self.capture_btn.config(state=tk.DISABLED)
         self.timer_btn.config(state=tk.DISABLED)
+        self.export_btn.config(state=tk.DISABLED)
+        self.save_btn.config(state=tk.DISABLED)
         
         self.app.update_status("Timer dimulai...")
         self._countdown(3)
@@ -419,6 +428,7 @@ class ShapeAnalysisPanel:
             self.stat_labels['soliditas'].config(text=f"{soliditas:,.4f}")
             
             self.export_btn.config(state=tk.NORMAL)
+            self.save_btn.config(state=tk.NORMAL)
             self.app.update_status("Analisis selesai. Parameter bentuk berhasil dihitung.")
 
         else:
@@ -434,6 +444,23 @@ class ShapeAnalysisPanel:
             self.stat_labels[key].config(text="-")
         self.result_canvas.delete("all")
         self.current_stats = {}
+
+    def save_image(self):
+        """Save the processed result image to gallery"""
+        if self.result_image is None:
+            messagebox.showwarning("Peringatan", "Tidak ada hasil proses untuk disimpan!")
+            return
+            
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"shape_analysis_{timestamp}.png"
+        filepath = os.path.join(self.app.gallery_folder, filename)
+        
+        try:
+            cv2.imwrite(filepath, self.result_image)
+            self.app.update_status(f"Gambar disimpan: {filename}")
+            messagebox.showinfo("Sukses", f"Gambar berhasil disimpan ke:\n{filepath}")
+        except Exception as e:
+            messagebox.showerror("Error", f"Gagal menyimpan gambar: {str(e)}")
 
     def export_excel(self):
         """Export current shape statistics to Excel file"""
