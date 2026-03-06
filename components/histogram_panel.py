@@ -211,12 +211,14 @@ class HistogramPanel:
         self.histogram_btn = tk.Button(btn_frame, text="📊 Histogram",
                                        command=self.show_histogram,
                                        bg="#9b59b6", fg="white",
+                                       disabledforeground="white",
                                        state=tk.DISABLED, **btn_style)
         self.histogram_btn.pack(side=tk.LEFT, padx=20, expand=True)
 
         self.save_btn = tk.Button(btn_frame, text="💾 Simpan",
                                   command=self.save_to_database,
                                   bg="#3498db", fg="white",
+                                  disabledforeground="white",
                                   state=tk.DISABLED, **btn_style)
         self.save_btn.pack(side=tk.LEFT, padx=4, expand=True)
 

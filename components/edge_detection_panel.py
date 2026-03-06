@@ -5,6 +5,7 @@ import cv2
 import numpy as np
 import os
 from datetime import datetime
+from scipy import stats
 from components.selectors import CameraSelector
 
 # Matplotlib for histogram
@@ -45,108 +46,119 @@ class EdgeDetectionPanel:
         self.edge_window.resizable(True, True)
 
         # =============== MAIN HORIZONTAL LAYOUT ===============
-        main_hbox = tk.Frame(self.edge_window, bg="#2c3e50")
+        main_hbox = tk.Frame(self.edge_window, bg="#1a202c") # Dark theme background
         main_hbox.pack(fill=tk.BOTH, expand=True, padx=0, pady=0)
 
-        # =============== SIDEBAR ===============
+        # =============== LEFT SIDEBAR ===============
         self._build_sidebar(main_hbox)
 
-        # =============== CONTENT AREA ===============
-        content_area = tk.Frame(main_hbox, bg="#2c3e50")
-        content_area.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        # =============== CENTER CONTENT AREA ===============
+        content_area = tk.Frame(main_hbox, bg="#1a202c")
+        content_area.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=15, pady=15)
 
-        # --- TOP ROW: Camera | Result | Histogram ---
-        top_frame = tk.Frame(content_area, bg="#2c3e50")
-        top_frame.pack(fill=tk.BOTH, expand=True, padx=10, pady=(10, 5))
+        # --- TOP ROW: Camera Input | Result ---
+        top_frame = tk.Frame(content_area, bg="#1a202c")
+        top_frame.pack(fill=tk.BOTH, expand=True)
 
         # Camera panel
-        camera_frame = tk.Frame(top_frame, bg="#34495e", relief=tk.SUNKEN, bd=2)
-        camera_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
-        tk.Label(camera_frame, text="📷 Camera", font=("Helvetica", 12, "bold"),
-                 bg="#34495e", fg="white").pack(pady=5)
-        self.camera_canvas = tk.Canvas(camera_frame, bg="#1a252f", width=380, height=300)
-        self.camera_canvas.pack(padx=8, pady=(0, 8), fill=tk.BOTH, expand=True)
+        camera_frame = tk.Frame(top_frame, bg="#2d3748", relief=tk.FLAT, bd=0)
+        camera_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 10))
+        tk.Label(camera_frame, text="❂ Camera Input", font=("Helvetica", 10),
+                 bg="#2d3748", fg="white", anchor="w").pack(fill=tk.X, padx=10, pady=8)
+        self.camera_canvas = tk.Canvas(camera_frame, bg="#1a202c", width=380, height=300, highlightthickness=0)
+        self.camera_canvas.pack(padx=10, pady=(0, 10), fill=tk.BOTH, expand=True)
 
         # Result panel
-        result_frame = tk.Frame(top_frame, bg="#34495e", relief=tk.SUNKEN, bd=2)
-        result_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=5)
-        tk.Label(result_frame, text="📋 Hasil", font=("Helvetica", 12, "bold"),
-                 bg="#34495e", fg="white").pack(pady=5)
-        self.result_canvas = tk.Canvas(result_frame, bg="#1a252f", width=380, height=300)
-        self.result_canvas.pack(padx=8, pady=(0, 8), fill=tk.BOTH, expand=True)
+        result_frame = tk.Frame(top_frame, bg="#2d3748", relief=tk.FLAT, bd=0)
+        result_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(10, 0))
+        tk.Label(result_frame, text="🖻 Result", font=("Helvetica", 10),
+                 bg="#2d3748", fg="white", anchor="w").pack(fill=tk.X, padx=10, pady=8)
+        self.result_canvas = tk.Canvas(result_frame, bg="#1a202c", width=380, height=300, highlightthickness=0)
+        self.result_canvas.pack(padx=10, pady=(0, 10), fill=tk.BOTH, expand=True)
 
-        # Histogram panel
-        hist_frame = tk.Frame(top_frame, bg="#34495e", relief=tk.SUNKEN, bd=2)
-        hist_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(5, 0))
-        tk.Label(hist_frame, text="📊 Histogram", font=("Helvetica", 12, "bold"),
-                 bg="#34495e", fg="white").pack(pady=5)
+        # --- MIDDLE ROW: Histogram ---
+        hist_frame = tk.Frame(content_area, bg="#2d3748", relief=tk.FLAT, bd=0)
+        hist_frame.pack(fill=tk.BOTH, expand=True, pady=20)
+        tk.Label(hist_frame, text="📊 Histogram", font=("Helvetica", 10),
+                 bg="#2d3748", fg="white", anchor="w").pack(fill=tk.X, padx=10, pady=8)
 
-        self.fig = Figure(figsize=(4, 3), dpi=80)
-        self.fig.patch.set_facecolor('#1a252f')
+        self.fig = Figure(figsize=(8, 3), dpi=80)
+        self.fig.patch.set_facecolor('#1a202c')
         self.ax = self.fig.add_subplot(111)
-        self.ax.set_facecolor('#1a252f')
-        self.ax.tick_params(colors='white', labelsize=7)
-        self.ax.spines['bottom'].set_color('white')
-        self.ax.spines['left'].set_color('white')
+        self.ax.set_facecolor('#1a202c')
+        self.ax.tick_params(colors='gray', labelsize=8)
+        self.ax.spines['bottom'].set_color('gray')
+        self.ax.spines['left'].set_color('gray')
         self.ax.spines['top'].set_visible(False)
         self.ax.spines['right'].set_visible(False)
-        self.ax.set_xlabel('Intensitas', color='white', fontsize=8)
-        self.ax.set_ylabel('Frekuensi', color='white', fontsize=8)
-        self.ax.text(0.5, 0.5, 'Histogram akan muncul\nsetelah filter diterapkan',
+        self.ax.set_xlabel('Intensity', color='gray', fontsize=9)
+        self.ax.set_ylabel('Frequency', color='gray', fontsize=9)
+        self.ax.text(0.5, 0.5, 'Histogram will appear after filter is applied',
                      transform=self.ax.transAxes, ha='center', va='center',
-                     color='gray', fontsize=9)
+                     color='gray', fontsize=10)
 
         self.chart_canvas = FigureCanvasTkAgg(self.fig, master=hist_frame)
         self.chart_canvas.draw()
-        self.chart_canvas.get_tk_widget().pack(padx=8, pady=(0, 8), fill=tk.BOTH, expand=True)
+        self.chart_canvas.get_tk_widget().pack(padx=10, pady=(0, 10), fill=tk.BOTH, expand=True)
 
-        # --- THRESHOLD SLIDER ---
-        slider_container = tk.Frame(content_area, bg="#34495e", relief=tk.SUNKEN, bd=2)
-        slider_container.pack(fill=tk.X, padx=10, pady=5)
+        # --- BOTTOM ROW: Threshold Slider & Buttons ---
+        bottom_frame = tk.Frame(content_area, bg="#2d3748", relief=tk.FLAT, bd=0)
+        bottom_frame.pack(fill=tk.X)
 
-        slider_inner = tk.Frame(slider_container, bg="#34495e")
-        slider_inner.pack(fill=tk.X, padx=15, pady=8)
+        # Slider container
+        slider_container = tk.Frame(bottom_frame, bg="#2d3748")
+        slider_container.pack(fill=tk.X, padx=20, pady=(15, 5))
 
-        tk.Label(slider_inner, text="Threshold:", font=("Helvetica", 11, "bold"),
-                 bg="#34495e", fg="#f1c40f").pack(side=tk.LEFT)
+        tk.Label(slider_container, text="Threshold:", font=("Helvetica", 10, "bold"),
+                 bg="#2d3748", fg="#d69e2e").pack(side=tk.LEFT)
 
-        self.threshold_label = tk.Label(slider_inner, text="127", font=("Helvetica", 11, "bold"),
-                                        bg="#34495e", fg="white", width=5)
+        self.threshold_label = tk.Label(slider_container, text="127", font=("Helvetica", 10, "bold"),
+                                        bg="#2d3748", fg="lightgray", width=5)
         self.threshold_label.pack(side=tk.RIGHT)
 
+        style = ttk.Style()
+        style.configure("Modern.Horizontal.TScale", background="#2d3748", troughcolor="#4a5568")
+
         self.threshold_slider = ttk.Scale(
-            slider_inner, from_=0, to=255, orient=tk.HORIZONTAL,
-            command=self._on_threshold_change
+            slider_container, from_=0, to=255, orient=tk.HORIZONTAL,
+            command=self._on_threshold_change, style="Modern.Horizontal.TScale"
         )
         self.threshold_slider.set(127)
-        self.threshold_slider.pack(fill=tk.X, padx=(10, 10), expand=True)
+        self.threshold_slider.pack(fill=tk.X, padx=15, expand=True)
 
-        # --- BOTTOM BUTTONS ---
-        btn_frame = tk.Frame(content_area, bg="#2c3e50")
-        btn_frame.pack(fill=tk.X, padx=10, pady=(5, 12))
+        # Action Buttons container
+        btn_container = tk.Frame(bottom_frame, bg="#2d3748")
+        btn_container.pack(fill=tk.X, pady=(10, 15))
+        
+        # Inner frame to center buttons
+        btn_inner = tk.Frame(btn_container, bg="#2d3748")
+        btn_inner.pack(anchor="center")
 
-        btn_style = {"font": ("Helvetica", 14, "bold"), "width": 14, "height": 2, "cursor": "hand2"}
+        btn_style = {"font": ("Helvetica", 10, "bold"), "width": 12, "height": 1, "cursor": "hand2", "relief": tk.FLAT}
 
-        self.capture_btn = tk.Button(btn_frame, text="📷 Capture",
+        self.capture_btn = tk.Button(btn_inner, text="📷 Capture",
                                      command=self.capture_image,
-                                     bg="#2ecc71", fg="white", **btn_style)
-        self.capture_btn.pack(side=tk.LEFT, padx=10, expand=True)
+                                     bg="#4ade80", fg="white", activebackground="#22c55e", activeforeground="white", **btn_style)
+        self.capture_btn.pack(side=tk.LEFT, padx=10)
 
-        self.save_btn = tk.Button(btn_frame, text="💾 Simpan",
+        self.save_btn = tk.Button(btn_inner, text="💾 Save",
                                   command=self.save_result,
-                                  bg="#3498db", fg="white",
-                                  state=tk.DISABLED, **btn_style)
-        self.save_btn.pack(side=tk.LEFT, padx=10, expand=True)
+                                  bg="#3b82f6", fg="white", activebackground="#2563eb", activeforeground="white",
+                                  disabledforeground="white", state=tk.DISABLED, **btn_style)
+        self.save_btn.pack(side=tk.LEFT, padx=10)
 
-        self.clear_btn = tk.Button(btn_frame, text="🗑️ Hapus",
+        self.clear_btn = tk.Button(btn_inner, text="🗑️ Delete",
                                    command=self.clear_result,
-                                   bg="#e74c3c", fg="white", **btn_style)
-        self.clear_btn.pack(side=tk.LEFT, padx=10, expand=True)
+                                   bg="#f87171", fg="white", activebackground="#ef4444", activeforeground="white", **btn_style)
+        self.clear_btn.pack(side=tk.LEFT, padx=10)
 
-        self.close_btn = tk.Button(btn_frame, text="❌ Tutup",
+        self.close_btn = tk.Button(btn_inner, text="✕ Close",
                                    command=self.close_panel,
-                                   bg="#95a5a6", fg="white", **btn_style)
-        self.close_btn.pack(side=tk.LEFT, padx=10, expand=True)
+                                   bg="#718096", fg="white", activebackground="#4a5568", activeforeground="white", **btn_style)
+        self.close_btn.pack(side=tk.LEFT, padx=10)
+
+        # =============== RIGHT SIDEBAR ===============
+        self._build_right_sidebar(main_hbox)
 
         # Start camera
         self.start_camera(source)
@@ -156,43 +168,93 @@ class EdgeDetectionPanel:
 
     def _build_sidebar(self, parent):
         """Build the sidebar with dashboard and filter buttons"""
-        sidebar = tk.Frame(parent, bg="#1a252f", width=180, relief=tk.RAISED, bd=2)
+        sidebar = tk.Frame(parent, bg="#2d3748", width=220, relief=tk.FLAT)
         sidebar.pack(side=tk.LEFT, fill=tk.Y)
         sidebar.pack_propagate(False)
 
         # Dashboard header
-        header = tk.Frame(sidebar, bg="#0d1821", pady=12)
-        header.pack(fill=tk.X)
-        tk.Label(header, text="📌 Dashboard", font=("Helvetica", 14, "bold"),
-                 bg="#0d1821", fg="white").pack()
+        header = tk.Frame(sidebar, bg="#2d3748", pady=15)
+        header.pack(fill=tk.X, padx=15)
+        tk.Label(header, text="❖ Dashboard", font=("Helvetica", 14, "bold"),
+                 bg="#2d3748", fg="white", anchor="w").pack(fill=tk.X)
 
-        # Separator
-        tk.Frame(sidebar, bg="#34495e", height=2).pack(fill=tk.X, pady=5)
+        # Base actions
+        btn_style = {"font": ("Helvetica", 10, "bold"), "relief": tk.FLAT, "cursor": "hand2", "anchor": tk.W, "padx": 15, "pady": 8}
+        
+        tk.Button(sidebar, text="📷 Camera", command=self._sidebar_camera,
+                  bg="#4ade80", fg="white", activebackground="#22c55e", activeforeground="white", **btn_style).pack(fill=tk.X, padx=15, pady=(5, 5))
+        
+        tk.Button(sidebar, text="📁 Open", command=self._sidebar_open,
+                  bg="#3b82f6", fg="white", activebackground="#2563eb", activeforeground="white", **btn_style).pack(fill=tk.X, padx=15, pady=(5, 15))
 
-        # Sidebar button list
-        sidebar_buttons = [
-            ("📷 Camera",       "#2ecc71", self._sidebar_camera),
-            ("📂 Open",         "#3498db", self._sidebar_open),
-            ("🔲 Filter Robert",  "#9b59b6", lambda: self._apply_filter("robert")),
-            ("🔲 Filter Prewitt", "#8e44ad", lambda: self._apply_filter("prewitt")),
-            ("🔲 Filter Sobel",   "#2980b9", lambda: self._apply_filter("sobel")),
-            ("🔲 Filter Canny",   "#16a085", lambda: self._apply_filter("canny")),
-            ("🔲 Frei-Chen",      "#d35400", lambda: self._apply_filter("freichen")),
-            ("🔲 Filter Otsu",    "#c0392b", lambda: self._apply_filter("otsu")),
-            ("🔲 Filter Kirsch",  "#27ae60", lambda: self._apply_filter("kirsch")),
-            ("🔲 Dua Aras",       "#f39c12", lambda: self._apply_filter("duaaras")),
+        # Edge Detection header
+        tk.Label(sidebar, text="EDGE DETECTION", font=("Helvetica", 9, "bold"),
+                 bg="#2d3748", fg="gray", anchor="w").pack(fill=tk.X, padx=15, pady=(5, 5))
+
+        edge_buttons = [
+            ("◩ Filter Robert",  "#b83280", lambda: self._apply_filter("robert")),
+            ("◩ Filter Prewitt", "#9f7aea", lambda: self._apply_filter("prewitt")),
+            ("◩ Filter Sobel",   "#0ea5e9", lambda: self._apply_filter("sobel")),
+            ("◩ Filter Canny",   "#14b8a6", lambda: self._apply_filter("canny")),
+            ("◩ Frei-Chen",      "#f59e0b", lambda: self._apply_filter("freichen")),
         ]
 
         self.sidebar_btns = {}
-        for text, color, cmd in sidebar_buttons:
-            btn = tk.Button(sidebar, text=text, command=cmd,
-                            font=("Helvetica", 10, "bold"),
-                            bg=color, fg="white",
-                            activebackground=color,
-                            relief=tk.FLAT, cursor="hand2",
-                            anchor=tk.W, padx=15, pady=8)
-            btn.pack(fill=tk.X, padx=8, pady=3)
+        for text, color, cmd in edge_buttons:
+            btn = tk.Button(sidebar, text=text, command=cmd, bg=color, fg="white", 
+                            activebackground=color, activeforeground="white", **btn_style)
+            btn.pack(fill=tk.X, padx=15, pady=3)
             self.sidebar_btns[text] = btn
+
+        # Segmentation header
+        tk.Label(sidebar, text="SEGMENTATION", font=("Helvetica", 9, "bold"),
+                 bg="#2d3748", fg="gray", anchor="w").pack(fill=tk.X, padx=15, pady=(15, 5))
+
+        seg_buttons = [
+            ("❖ Filter Otsu",    "#ef4444", lambda: self._apply_filter("otsu")),
+            ("❖ Filter Kirsch",  "#22c55e", lambda: self._apply_filter("kirsch")),
+            ("❖ Dua Aras",       "#f59e0b", lambda: self._apply_filter("duaaras")),
+        ]
+
+        for text, color, cmd in seg_buttons:
+            btn = tk.Button(sidebar, text=text, command=cmd, bg=color, fg="white", 
+                            activebackground=color, activeforeground="white", **btn_style)
+            btn.pack(fill=tk.X, padx=15, pady=3)
+            self.sidebar_btns[text] = btn
+
+    def _build_right_sidebar(self, parent):
+        """Build the right sidebar for image statistics"""
+        sidebar = tk.Frame(parent, bg="#2d3748", width=240, relief=tk.FLAT)
+        sidebar.pack(side=tk.RIGHT, fill=tk.Y)
+        sidebar.pack_propagate(False)
+        
+        # Header
+        header = tk.Frame(sidebar, bg="#2d3748", pady=15)
+        header.pack(fill=tk.X, padx=15)
+        tk.Label(header, text="📊 Image Statistics", font=("Helvetica", 11, "bold"),
+                 bg="#2d3748", fg="white", anchor="w").pack(fill=tk.X)
+
+        tk.Frame(sidebar, bg="#4a5568", height=1).pack(fill=tk.X, padx=15)
+        
+        stats_frame = tk.Frame(sidebar, bg="#2d3748")
+        stats_frame.pack(fill=tk.BOTH, expand=True, padx=15, pady=15)
+        
+        self.stat_labels = {}
+        stat_items = [
+            ("Image Info", "info"),
+            ("Skewness", "skewness"),
+            ("Average", "average"),
+            ("STD", "std"),
+            ("Kurtosis", "kurtosis"),
+        ]
+        
+        for label_text, key in stat_items:
+            tk.Label(stats_frame, text=f"{label_text}:", font=("Helvetica", 9, "bold"),
+                     bg="#2d3748", fg="#d69e2e", anchor=tk.W).pack(anchor=tk.W, pady=(10, 0))
+            val_label = tk.Label(stats_frame, text="-", font=("Consolas", 9),
+                                 bg="#2d3748", fg="lightgray", anchor=tk.W, justify=tk.LEFT)
+            val_label.pack(anchor=tk.W, pady=(2, 0))
+            self.stat_labels[key] = val_label
 
     # =============== SIDEBAR ACTIONS ===============
 
@@ -405,23 +467,32 @@ class EdgeDetectionPanel:
     # =============== HISTOGRAM ===============
 
     def _update_histogram(self, gray_img):
-        """Update histogram chart with result image"""
+        """Update histogram chart with result image and calculate statistics"""
         self.ax.clear()
-        self.ax.set_facecolor('#1a252f')
-        self.ax.tick_params(colors='white', labelsize=7)
-        self.ax.spines['bottom'].set_color('white')
-        self.ax.spines['left'].set_color('white')
+        self.ax.set_facecolor('#1a202c')
+        self.ax.tick_params(colors='gray', labelsize=8)
+        self.ax.spines['bottom'].set_color('gray')
+        self.ax.spines['left'].set_color('gray')
         self.ax.spines['top'].set_visible(False)
         self.ax.spines['right'].set_visible(False)
-        self.ax.set_xlabel('Intensitas', color='white', fontsize=8)
-        self.ax.set_ylabel('Frekuensi', color='white', fontsize=8)
+        self.ax.set_xlabel('Intensity', color='gray', fontsize=9)
+        self.ax.set_ylabel('Frequency', color='gray', fontsize=9)
 
         self.ax.hist(gray_img.ravel(), bins=256, range=(0, 256),
-                     color='#3498db', alpha=0.7, histtype='stepfilled')
-        self.ax.legend(['Hasil'], loc='upper right', fontsize=7,
-                       facecolor='#34495e', edgecolor='white', labelcolor='white')
+                     color='#3b82f6', alpha=0.7, histtype='stepfilled')
         self.fig.tight_layout()
         self.chart_canvas.draw()
+
+        # Update Statistics
+        pixels = gray_img.flatten()
+        h, w = gray_img.shape[:2]
+        
+        if hasattr(self, 'stat_labels'):
+            self.stat_labels['info'].config(text=f"{w} x {h} px | Grayscale")
+            self.stat_labels['skewness'].config(text=f"{float(stats.skew(pixels)):.4f}")
+            self.stat_labels['average'].config(text=f"{float(np.mean(pixels)):.2f}")
+            self.stat_labels['std'].config(text=f"{float(np.std(pixels)):.4f}")
+            self.stat_labels['kurtosis'].config(text=f"{float(stats.kurtosis(pixels)):.4f}")
 
     # =============== UTILITY ===============
 
@@ -471,16 +542,22 @@ class EdgeDetectionPanel:
 
         # Reset histogram
         self.ax.clear()
-        self.ax.set_facecolor('#1a252f')
-        self.ax.tick_params(colors='white', labelsize=7)
-        self.ax.spines['bottom'].set_color('white')
-        self.ax.spines['left'].set_color('white')
+        self.ax.set_facecolor('#1a202c')
+        self.ax.tick_params(colors='gray', labelsize=8)
+        self.ax.spines['bottom'].set_color('gray')
+        self.ax.spines['left'].set_color('gray')
         self.ax.spines['top'].set_visible(False)
         self.ax.spines['right'].set_visible(False)
-        self.ax.text(0.5, 0.5, 'Histogram akan muncul\nsetelah filter diterapkan',
+        self.ax.text(0.5, 0.5, 'Histogram will appear\nafter filter is applied',
                      transform=self.ax.transAxes, ha='center', va='center',
-                     color='gray', fontsize=9)
+                     color='gray', fontsize=10)
         self.chart_canvas.draw()
+        
+        # Reset stats
+        if hasattr(self, 'stat_labels'):
+            for key in self.stat_labels:
+                self.stat_labels[key].config(text="-")
+                
         self.app.update_status("Hasil dihapus")
 
     def close_panel(self):
