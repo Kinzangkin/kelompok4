@@ -17,6 +17,7 @@ from components.gray_to_biner import GrayToBinerPanel
 from components.histogram_panel import HistogramPanel
 from components.edge_detection_panel import EdgeDetectionPanel
 from components.shape_analysis_panel import ShapeAnalysisPanel
+from components.color_statistics_panel import ColorStatisticsPanel
 from components.utils import get_color_name, format_file_size, open_file_location
 
 
@@ -42,6 +43,7 @@ class AplikasiPengolahanCitra:
         self.histogram_component = HistogramPanel(self)
         self.edge_detection_component = EdgeDetectionPanel(self)
         self.shape_analysis_component = ShapeAnalysisPanel(self)
+        self.color_statistics_component = ColorStatisticsPanel(self)
         
         # Setup UI
         self.setup_menu()
@@ -83,6 +85,7 @@ class AplikasiPengolahanCitra:
         analisis_menu.add_command(label="Histogram", command=self.show_histogram_selection)
         analisis_menu.add_command(label="Deteksi Tepi", command=self.show_edge_detection_selection)
         analisis_menu.add_command(label="Analisis Bentuk", command=self.show_shape_analysis_selection)
+        analisis_menu.add_command(label="Statistik Warna", command=self.show_color_statistics_selection)
     
     def setup_status_bar(self):
         """Setup status bar"""
@@ -137,6 +140,9 @@ class AplikasiPengolahanCitra:
 
     def show_shape_analysis_selection(self):
         self.shape_analysis_component.show_selection()
+
+    def show_color_statistics_selection(self):
+        self.color_statistics_component.show_selection()
 
 
 def main():
