@@ -16,7 +16,7 @@ class ScanPanel:
         self.camera_running = False
         self.current_rgb = (0, 0, 0)
 
-        # 🔥 untuk anti spam kirim data
+        # 🔥 untuk anti spam kirim dat
         self.last_sent_color = None
 
         
