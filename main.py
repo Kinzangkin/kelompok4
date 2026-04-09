@@ -48,7 +48,13 @@ class AplikasiPengolahanCitra:
         # Setup UI
         self.setup_menu()
         self.setup_status_bar()
+<<<<<<< HEAD
         self.show_gallery_page()
+=======
+        
+        # Menampilkan Welcome Screen saat pertama kali dibuka
+        self.show_welcome_screen()
+>>>>>>> acbd285f1ec39a357f1d7bf4dc0ca3b9835dab21
         
     def ensure_gallery_folder(self):
         """Create gallery folder if not exists"""
@@ -112,7 +118,32 @@ class AplikasiPengolahanCitra:
         self.status_bar.config(text=message)
         self.root.update_idletasks()
 
+<<<<<<< HEAD
     # --- Navigation Helpers (Delegation to components) ---
+=======
+    # --- Tampilan Awal Baru (Tanpa Tombol) ---
+    def show_welcome_screen(self):
+        """Menampilkan halaman sambutan awal"""
+        self.clear_main_content()
+        self.update_status("Selamat Datang")
+        
+        # Frame Kontainer Utama agar teks di tengah
+        welcome_frame = tk.Frame(self.root, bg="#2c3e50")
+        welcome_frame.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
+        
+        # Label Welcome
+        lbl_welcome = tk.Label(
+            welcome_frame, 
+            text="WELCOME\nKELOMPOK 4", 
+            font=("Helvetica", 48, "bold"),
+            fg="#ecf0f1",
+            bg="#2c3e50",
+            justify=tk.CENTER
+        )
+        lbl_welcome.pack(pady=20)
+
+    # --- Navigation Helpers ---
+>>>>>>> acbd285f1ec39a357f1d7bf4dc0ca3b9835dab21
     
     def show_gallery_page(self):
         self.gallery_component.show()
@@ -152,4 +183,8 @@ def main():
 
 
 if __name__ == "__main__":
+<<<<<<< HEAD
     main()
+=======
+    main()
+>>>>>>> acbd285f1ec39a357f1d7bf4dc0ca3b9835dab21
